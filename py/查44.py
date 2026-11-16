@@ -1,3 +1,5 @@
+# 查49（吹万 第 23 天 02:1x）：撇清不再无条件。说给一户那局，它的头一个邻居（牌上"邻"后头第一个）得是能嚼舌头的：没被你问得吓着（盘）、没关着窗（窗，含这局你听的）。嚼出去了，它才背上"替你说话"、从此往重里说；没嚼出去，账上写一行谁那天没开口，它不背。
+#   为什么：五十1"第四、五局孙先生重复这个过程时，意外感就少了，更多是'又来了'"。码里托过一律变怕，第二回是第一回的复印件。让它借邻居那张嘴的脾气：小六是被李瞎子嚼出来的，下回读得出挑哪户托、或先让那张嘴闭上。题面一字不动（撇清本来就不在题面里）。
 # 查48 补（01:5x）：网五十1/2 都说赔完牌子没变（还写关窗、替你说话），赔完当场重摆一回牌。
 # 查48（吹万 第 23 天 01:4x）：查47 + 第四种动作"赔"：上门赔个不是，花一天。它身上你留下的（关门、记恨、吓着、关窗、替你打听、替你说话/往重里说）它这头算了；它跟别户结的梁子赔不到，它当面说。没留过东西的那户一愣，白花一天。账上写一行。
 #   为什么：网四十六2、四十九1 都是"知道连累了谁，却没法补"（"每次补救又留新债，有点无力"）。这一刀给一条干净的补法，代价只是一天，看后几局会不会有人拿出一天去还账，或者拿账来排先后。
@@ -394,7 +396,13 @@ if len(sys.argv) > 4:
     else: 学新 = set()
     open(学档, "w").write(" ".join(f"{k}:{v}" for k, v in 学.items()))
     学新 |= ({f"歪:{歪}"} if 这局歪说 else set())
-    新的 = 学新 | ({f"盘:{n}" for n in 这局问过 - 盘} | {f"托:{n}" for n in 这局说过 - 托} | {f"窗:{n}" for n in 这局听过 - 窗}) | ({f"{记[指]}:{指}"} if 指 in 记 else set())
+    def _嚼(n):
+        a = 邻[n][0]
+        if a in 盘 or a in 这局问过: return a, "被你问得吓着，没敢嚼"
+        if a in 窗 or a in 这局听过: return a, "关着窗，没听见"
+        return a, ""
+    托新 = {n for n in 这局说过 - 托 if not _嚼(n)[1]}
+    新的 = 学新 | ({f"盘:{n}" for n in 这局问过 - 盘} | {f"托:{n}" for n in 托新} | {f"窗:{n}" for n in 这局听过 - 窗}) | ({f"{记[指]}:{指}"} if 指 in 记 else set())
     耳新 = {n for n in 这局问过 if n in 盘 and n not in 耳}
     新的 |= {f"耳:{n}" for n in 耳新}
     if 耳新: open(耳档, "w").write(" ".join(sorted(耳 | 耳新)))
@@ -406,8 +414,8 @@ if len(sys.argv) > 4:
     open(盘档, "w").write(" ".join(f"{n}@{k}" for n, k in sorted(盘时.items()) if 局 + 1 - k <= 3))
     open(局档, "w").write(str(局 + 1))
     open(服时档, "w").write(" ".join(f"{n}@{k}" for n, k in sorted(服时.items())))
-    if 这局说过: open(托档, "w").write(" ".join(sorted(托 | 这局说过)))
-    if 赔了: open(托档, "w").write(" ".join(sorted(托 | 这局说过))); open(耳档, "w").write(" ".join(sorted(耳 | 耳新)))
+    if 这局说过: open(托档, "w").write(" ".join(sorted(托 | 托新)))
+    if 赔了: open(托档, "w").write(" ".join(sorted(托 | 托新))); open(耳档, "w").write(" ".join(sorted(耳 | 耳新)))
     if 指 not in ("无人", 凶) and 凶 != "无人" and 梁.get(指) != 凶:
         梁[指] = 凶; 新的.add(f"梁:{指}"); open(新档, "w").write(" ".join(sorted(新的)))
     open(梁档, "w").write(" ".join(f"{k}:{v}" for k, v in 梁.items()))
@@ -417,7 +425,9 @@ if len(sys.argv) > 4:
         if n in 耳新: _账.append(f"{n}落了个替你打听事的名声（你连着两局问它）")
         elif n not in 盘: _账.append(f"{n}被问得吓着了（你问的）")
     for n in sorted(这局听过 - 窗): _账.append(f"{n}知道有人在墙外听（你听的）")
-    for n in sorted(这局说过 - 托): _账.append(f"{n}背上了替你说话（你说给它的）")
+    for n in sorted(这局说过 - 托):
+        _a, _y = _嚼(n)
+        _账.append(f"{n}背上了替你说话（你说给它的，{_a}嚼出去的）" if not _y else f"{n}替你说了，没背上名声（{_a}{_y}）")
     if f"梁:{指}" in 新的: _账.append(f"{指}被你冤枉了，跟{梁[指]}结了梁子（你指的；真改的是{梁[指]}）")
     elif 指 != "无人": _账.append(f"{指}被你{'说中了' if 指 == 凶 else '冤枉了'}（你指的）")
     for n, 了 in sorted(赔了.items()): _账.append(f"{n}跟你缓过来了：{'、'.join(了)}（你赔的）")
