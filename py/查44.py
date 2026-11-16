@@ -1,3 +1,6 @@
+# 查48 补（01:5x）：网五十1/2 都说赔完牌子没变（还写关窗、替你说话），赔完当场重摆一回牌。
+# 查48（吹万 第 23 天 01:4x）：查47 + 第四种动作"赔"：上门赔个不是，花一天。它身上你留下的（关门、记恨、吓着、关窗、替你打听、替你说话/往重里说）它这头算了；它跟别户结的梁子赔不到，它当面说。没留过东西的那户一愣，白花一天。账上写一行。
+#   为什么：网四十六2、四十九1 都是"知道连累了谁，却没法补"（"每次补救又留新债，有点无力"）。这一刀给一条干净的补法，代价只是一天，看后几局会不会有人拿出一天去还账，或者拿账来排先后。
 # 查47（吹万 第 23 天 01:2x）：查46 + 揭开末尾一行「这局因为你：」，点名这局你那几步在谁身上留了什么（问的吓着、听的知道墙外有人、说的背上替你说话、指的冤了/说中），括号写是哪一步。规则一字不动。
 #   为什么：网46/47 四份抄本后几局全零，可他们在意的已经不是点数（四十六2'我是在拿别人的人缘换线索'），这些只散在下一局牌子里，没有一行账。像《干净明亮的地方》老头桌上摞的碟子：停两天的那局账上写'没有'，跟问遍全村的一眼分开。
 # 查46（吹万 第 23 天 00:4x）：撇清。替你说过话的那户，怕人说它是你的嘴，从此传你的话往吓人里说（嘴换成怕；盘问过它照样收着，三局；记仇照旧盖过）。开局写一句、牌上摆一块。为什么：网四十七1/2 后三局全村零点，'答题的感觉变多了'；收着把怕压成好心，查得越勤村里越太平。让前面托过的那一步回来添点。
@@ -231,16 +234,18 @@ for n, (a, b) in sorted(串新.items()):
 for n, (a, b) in sorted(串.items()): 老.append(f"{a}常去{b}家")
 if 老: print("村里老样子：" + "；".join(老) + "。")
 import json as _j  # 网页用：每户名字旁边常摆的牌子（第 22 天 22:3x 吹万），终端里没人看这行
-_牌 = {n: [] for n in 名}
-for n in 仇: _牌[n].append("见你关门")
-for n in 服:
-    if n not in 服时 or 局 - 服时[n] <= 2: _牌[n].append("见你低头")  # 网45 四十五2：缓过来了牌上还写低头
-for n in 盘: _牌[n].append("说话收着")
-for n in 托: _牌[n] += ["人说它替你说话"] + ([] if n in 盘 or (n in 服时 and 局 - 服时[n] <= 2) else ["说你往重里说"])
-for n in 耳: _牌[n].append("人说它替你打听")
-for n in 窗: _牌[n].append("关着窗")
-for x, z in 梁.items(): _牌[x].append(f"跟{z}不说话")
-if "WEB" in os.environ: print("@牌" + _j.dumps(_牌, ensure_ascii=False))
+def _出牌():
+  _牌 = {n: [] for n in 名}
+  for n in 仇: _牌[n].append("见你关门")
+  for n in 服:
+      if n not in 服时 or 局 - 服时[n] <= 2: _牌[n].append("见你低头")  # 网45 四十五2：缓过来了牌上还写低头
+  for n in 盘: _牌[n].append("说话收着")
+  for n in 托: _牌[n] += ["人说它替你说话"] + ([] if n in 盘 or (n in 服时 and 局 - 服时[n] <= 2) else ["说你往重里说"])
+  for n in 耳: _牌[n].append("人说它替你打听")
+  for n in 窗: _牌[n].append("关着窗")
+  for x, z in 梁.items(): _牌[x].append(f"跟{z}不说话")
+  if "WEB" in os.environ: print("@牌" + _j.dumps(_牌, ensure_ascii=False))
+_出牌()
 if "WEB" in os.environ: print("@邻" + _j.dumps(邻, ensure_ascii=False))  # 网48：走动起来了，邻居栏还是旧的
 深 = {k: len(链(听过, k)) for k in 听过}; _d = max(深.values())
 末 = max([kv for kv in 听过.items() if 深[kv[0]] == _d], key=lambda kv: 打分(kv[1][0], s)); 末句 = 末[1][0]
@@ -257,7 +262,7 @@ for 步 in 问:
     if 谁_ not in 名: print(f"村里没有「{谁_}」这一户。六户是：{'、'.join(名)}。"); sys.exit(1)
 if len(sys.argv) > 4 and sys.argv[4] not in 名 and sys.argv[4] != "无人":
     print(f"指认只能写六户里的一户，或者写「无人」（你觉得路上谁都没改）。"); sys.exit(1)
-关门 = set(); 这局歪说 = False
+关门 = set(); 这局歪说 = False; 这局赔过 = set(); 赔了 = {}
 for d, 步 in enumerate(问):
     做, 谁 = 步.split(":") if ":" in 步 else ("问", 步)
     if 做 in ("问", "说") and 谁 in 关门:
@@ -280,6 +285,21 @@ for d, 步 in enumerate(问):
         elif 谁 in 耳: print(f"  走的时候踩响了柴火。{谁}在里头笑了一声：「打听事的，倒让人打听了。」")
         elif 谁 in 服: print(f"  走的时候踩响了柴火。里头静了，{谁}没出声，把灯吹了。")
         else: print(f"  走的时候踩响了柴火，{谁}在里头咳了一声。")
+    elif 做 == "赔":
+        这局赔过.add(谁)
+        print(f"第{d+1}天 你提了两斤点心上{谁}家，赔了个不是。")
+        了 = []
+        if 谁 in 关门: 关门.discard(谁); 这局听过.discard(谁); 了.append("门开了")
+        if 谁 in 仇: del 记[谁]; 仇.remove(谁); 了.append("冤它那回它不记了")
+        if 谁 in 盘: 盘.discard(谁); 盘时.pop(谁, None); 了.append("不再吓着")
+        if 谁 in 窗: 窗.discard(谁); 窗时.pop(谁, None); 了.append("窗开了")
+        if 谁 in 耳: 耳.discard(谁); 了.append("不再替你打听")
+        if 谁 in 托: 托.discard(谁); 了.append("不再替你说话")
+        if not 了 and 谁 not in 梁: print(f"  {谁}一愣：「你赔什么不是？我这儿没什么。」点心倒是收下了。")
+        elif 了: print(f"  {谁}把点心接过去：「行了，这事我这头算了。」（{'、'.join(了)}）")
+        if 谁 in 梁: print(f"  {谁}又说：「可{梁[谁]}那事没完，那不是你能赔的。」")
+        if 了: 赔了[谁] = 了
+        if 了: _出牌()  # 网50 两人：赔完日志说窗开了，牌上还写关着窗
     elif 做 == "说":
         print(f"第{d+1}天 你去跟{谁}说「我那天其实是说：{念(s)}」")
         if 谁 == 歪 and 谁 not in 服:
@@ -387,6 +407,7 @@ if len(sys.argv) > 4:
     open(局档, "w").write(str(局 + 1))
     open(服时档, "w").write(" ".join(f"{n}@{k}" for n, k in sorted(服时.items())))
     if 这局说过: open(托档, "w").write(" ".join(sorted(托 | 这局说过)))
+    if 赔了: open(托档, "w").write(" ".join(sorted(托 | 这局说过))); open(耳档, "w").write(" ".join(sorted(耳 | 耳新)))
     if 指 not in ("无人", 凶) and 凶 != "无人" and 梁.get(指) != 凶:
         梁[指] = 凶; 新的.add(f"梁:{指}"); open(新档, "w").write(" ".join(sorted(新的)))
     open(梁档, "w").write(" ".join(f"{k}:{v}" for k, v in 梁.items()))
@@ -399,6 +420,7 @@ if len(sys.argv) > 4:
     for n in sorted(这局说过 - 托): _账.append(f"{n}背上了替你说话（你说给它的）")
     if f"梁:{指}" in 新的: _账.append(f"{指}被你冤枉了，跟{梁[指]}结了梁子（你指的；真改的是{梁[指]}）")
     elif 指 != "无人": _账.append(f"{指}被你{'说中了' if 指 == 凶 else '冤枉了'}（你指的）")
+    for n, 了 in sorted(赔了.items()): _账.append(f"{n}跟你缓过来了：{'、'.join(了)}（你赔的）")
     print("这局因为你：" + ("；".join(_账) + "。" if _账 else "没有哪户因为你变了样。"))
     print(f"全村最后平均坏 {sum(坏(v) for v in 现.values()) / len(现):.2f}")
 if len(sys.argv) > 4:

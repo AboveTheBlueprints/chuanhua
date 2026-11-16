@@ -24,6 +24,7 @@ button:disabled{opacity:.35;cursor:default}
 <li><b>问</b>一户：它告诉你它头一回听到的是什么、从谁那听的。可你一开口问"听说……？"，就等于把村口那句又递给它一回，它照毛病改了，再传遍全村。村里有一户记性不好：问它从谁那听的，它报的不一定是真给它这句话的那户。</li>
 <li><b>听</b>一户：在它院墙外站半天，听见它现在手里的整句。什么也没递给它；可听不出它从谁那听来的。它察觉了，第二天你去问它、说给它，它都不开门。</li>
 <li><b>说</b>给一户：把你那天真说的原话再讲给它，它照毛病改了，只讲给它自己的邻居。它会当面回你一句它往下打算怎么讲；当面讲的跟背地里讲的，不一定一样。</li>
+<li><b>赔</b>不是：提点心上一户家里赔个不是。你从前在它身上留下的（关门、记恨、吓着、关窗……），它这头就算了；它跟别户结下的，赔不到。</li>
 <li>或者<b>停</b>：这天哪儿也不去。</li>
 </ul>
 <p>每天晚上你能看到每户现在手里的话对你有多坏（点越多越坏）。点只数一样：说得多吓人（看了看 0 点、摸了摸 1、拿了 2、偷了 3、砸了 4），说到坟、庙再加 1；说久了、说岔地方，不加点。所以零点的人手里也可能是一句歪话。</p>
@@ -74,9 +75,9 @@ finally:
     sys.stdout=_old
 _o.getvalue()`);
   写回();
-  const m=s.match(/^@牌(.*)$/m); if(m){ try{牌=JSON.parse(m[1])}catch(e){} }
+  const ms=[...s.matchAll(/^@牌(.*)$/mg)]; if(ms.length){ try{牌=JSON.parse(ms[ms.length-1][1])}catch(e){} }
   const m2=s.match(/^@邻(.*)$/m); if(m2){ try{Object.assign(邻,JSON.parse(m2[1]))}catch(e){} }
-  return s.replace(/^@牌.*\n?/m,"").replace(/^@邻.*\n?/m,"");
+  return s.replace(/^@牌.*\n?/mg,"").replace(/^@邻.*\n?/m,"");
 }
 function 画(){
   画牌(); ctl.innerHTML="";
@@ -84,7 +85,7 @@ function 画(){
   st.textContent=`第 ${局数()} 局`+(局数()<=5?"（共五局）":"（五局之后接着过）") + (步.length<2?`，第 ${步.length+1} 天`:完?"，揭开了":"，两天过完了，指认吧");
   if(完){ if(局数()<5){const b=document.createElement("button");b.textContent="下一局";b.onclick=下一局;ctl.appendChild(b);} else {ctl.innerHTML=`<p>${局数()===5?"五局都玩完了。谢谢你来村里。":"这一局完了。"}这个村子还可以接着过（村里人还记着你），也可以从头换一个。</p>`;const b=document.createElement("button");b.textContent="这村子接着过一局";b.onclick=下一局;ctl.appendChild(b);} return; }
   if(步.length<2){
-    for(const [动,字] of [["问","问"],["听","听"],["说","说给"]]){
+    for(const [动,字] of [["问","问"],["听","听"],["说","说给"],["赔","赔不是"]]){
       const r=document.createElement("div");r.className="row";r.innerHTML=`<span class=lab>${字}</span>`;
       for(const n of 名){const b=document.createElement("button");b.textContent=n;b.onclick=()=>走(动+":"+n);r.appendChild(b);}
       ctl.appendChild(r);
