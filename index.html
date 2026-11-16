@@ -1,0 +1,110 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>传话村</title>
+<style>
+body{margin:0;background:#efe8d6;color:#2b2618;font:16px/1.7 "PingFang SC",sans-serif}
+main{max-width:760px;margin:0 auto;padding:18px}
+h1{font-size:22px;margin:4px 0}
+details{background:#e4dbc3;border-radius:8px;padding:6px 12px;margin:8px 0}
+pre{white-space:pre-wrap;background:#faf6ea;border-radius:8px;padding:12px;font:15px/1.8 "PingFang SC",sans-serif;min-height:3em}
+.row{margin:6px 0}
+button{font:15px "PingFang SC",sans-serif;margin:3px;padding:5px 10px;border-radius:6px;border:1px solid #9b8c64;background:#fff9e8;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+.lab{display:inline-block;width:5em;color:#6b5f40}
+#st{color:#7a6b44}
+.zhi button{background:#f3dccb;border-color:#a56a4a}
+</style>
+<main>
+<h1>传话村</h1>
+<details open><summary>怎么玩（第一回读一遍）</summary>
+<p>你那天先后跟村里两户人家各说了一遍同一句话，说自己干了什么。话在村里传了一圈，今天村口有一户当面问你的，已经是歪掉的另一句。</p>
+<p>村里六户：王婆、李瞎子、赵屠、孙先生、钱寡妇、小六。邻居：王婆—李瞎子、王婆—赵屠、李瞎子—孙先生、李瞎子—小六、赵屠—钱寡妇、孙先生—钱寡妇、钱寡妇—小六。</p>
+<p>每户传话各有一个毛病，六种各一户，哪户是哪种不告诉你（名字不算数）：原样照说；嫌啰嗦砍半截；说得更久；说得更吓人；往好里说；听岔了地方。每户把话传给邻居时照自己的毛病改一回；当面讲给你听时也会再改一回。</p>
+<p>你有两天，每天做一件事：</p>
+<ul>
+<li><b>问</b>一户：它告诉你它头一回听到的是什么、从谁那听的。可你一开口问"听说……？"，就等于把村口那句又递给它一回，它照毛病改了，再传遍全村。村里有一户记性不好：问它从谁那听的，它报的不一定是真给它这句话的那户。</li>
+<li><b>听</b>一户：在它院墙外站半天，听见它现在手里的整句。什么也没递给它；可听不出它从谁那听来的。它察觉了，第二天你去问它、说给它，它都不开门。</li>
+<li><b>说</b>给一户：把你那天真说的原话再讲给它，它照毛病改了，只讲给它自己的邻居。它会当面回你一句它往下打算怎么讲；当面讲的跟背地里讲的，不一定一样。</li>
+<li>或者<b>停</b>：这天哪儿也不去。</li>
+</ul>
+<p>每天晚上你能看到每户现在手里的话对你有多坏（点越多越坏）。点只数一样：说得多吓人（看了看 0 点、摸了摸 1、拿了 2、偷了 3、砸了 4），说到坟、庙再加 1；说久了、说岔地方，不加点。所以零点的人手里也可能是一句歪话。</p>
+<p>两天过完，指出是谁先把话说歪的（从你开口的那两户里、真传到村口的那一户起，顺着那条路，第一个真把话改了的那户；觉得路上谁都没改就指"无人"）。指认会揭开答案。指对人，也让村里最后别那么坏，两件都算数。</p>
+<p><b>五局是同一个村子，前后连着。</b>你在哪一局里对谁做过什么、指认过谁，村里人会记得。</p>
+</details>
+<div id=st>正在把村子搬进来……（头一回要等十几秒）</div>
+<pre id=out></pre>
+<div id=ctl></div>
+<p><button id=chao>看前面几局的抄本</button> <button id=reset>从头换一个村子</button></p>
+</main>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+const 名=["王婆","李瞎子","赵屠","孙先生","钱寡妇","小六"];
+const 文件=["村.py","查2.py","量查5.py","查44.py"];
+const D="/home/pyodide/村", K="传话村44:";
+let py, 步=[];
+const st=document.getElementById("st"), out=document.getElementById("out"), ctl=document.getElementById("ctl");
+function 存(k,v){localStorage.setItem(K+k,v)} function 取(k){return localStorage.getItem(K+k)}
+function 村名(){let n=取("村名"); if(!n){n="村"+Math.floor(Math.random()*1e6); 存("村名",n)} return n}
+function 种子(){let s=取("种子"); if(!s){s=String(1000+Math.floor(Math.random()*9000)); 存("种子",s)} return s}
+function 局数(){return +(取("第几局")||1)}
+function 写回(){ // 村记 → localStorage
+  const fs=py.FS, d=D+"/村记", o={};
+  try{for(const f of fs.readdir(d)) if(f[0]!=".") o[f]=fs.readFile(d+"/"+f,{encoding:"utf8"});}catch(e){}
+  存("村记",JSON.stringify(o));
+}
+function 读进(){
+  const fs=py.FS, d=D+"/村记"; try{fs.mkdir(d)}catch(e){}
+  const o=JSON.parse(取("村记")||"{}"); for(const f in o) fs.writeFile(d+"/"+f,o[f]);
+}
+function 跑(args){
+  py.globals.set("ARGS",py.toPy([D+"/查44.py",...args]));
+  const s=py.runPython(`
+import sys, io, runpy
+_o=io.StringIO(); _old=sys.stdout; sys.stdout=_o
+sys.argv=list(ARGS)
+for _m in ('村','查2','量查5'): sys.modules.pop(_m,None)
+try:
+    runpy.run_path(sys.argv[0], run_name="__main__")
+except SystemExit:
+    pass
+finally:
+    sys.stdout=_old
+_o.getvalue()`);
+  写回(); return s;
+}
+function 画(){
+  ctl.innerHTML="";
+  const 完=步.length>=3;
+  st.textContent=`第 ${局数()} 局（共五局）` + (步.length<2?`，第 ${步.length+1} 天`:完?"，揭开了":"，两天过完了，指认吧");
+  if(完){ if(局数()<5){const b=document.createElement("button");b.textContent="下一局";b.onclick=下一局;ctl.appendChild(b);} else ctl.innerHTML="<p>五局都玩完了。谢谢你来村里。</p>"; return; }
+  if(步.length<2){
+    for(const [动,字] of [["问","问"],["听","听"],["说","说给"]]){
+      const r=document.createElement("div");r.className="row";r.innerHTML=`<span class=lab>${字}</span>`;
+      for(const n of 名){const b=document.createElement("button");b.textContent=n;b.onclick=()=>走(动+":"+n);r.appendChild(b);}
+      ctl.appendChild(r);
+    }
+    const r=document.createElement("div");r.className="row";const b=document.createElement("button");b.textContent="这天哪儿也不去";b.onclick=()=>走("停");r.appendChild(b);ctl.appendChild(r);
+  }else{
+    const r=document.createElement("div");r.className="row zhi";r.innerHTML=`<span class=lab>指认</span>`;
+    for(const n of [...名,"无人"]){const b=document.createElement("button");b.textContent=n;b.onclick=()=>{if(confirm("指认 "+n+"？指了就揭开。"))走(n)};r.appendChild(b);}
+    ctl.appendChild(r);
+  }
+}
+function 走(a){
+  步.push(a); 存("步",JSON.stringify(步));
+  // 指认那一下会改村记，只跑一次；平时每次从头算
+  out.textContent=跑([村名(),种子(),...步]); 画();
+}
+function 下一局(){存("第几局",局数()+1); localStorage.removeItem(K+"种子"); 步=[]; 存("步","[]"); out.textContent=跑([村名(),种子()]); 画(); scrollTo(0,0)}
+document.getElementById("chao").onclick=()=>{ if(!py)return; alert(跑([村名(),"抄"])); };
+document.getElementById("reset").onclick=()=>{ if(!confirm("整个村子忘掉，从第一局重来？"))return; for(const k of Object.keys(localStorage)) if(k.startsWith(K)) localStorage.removeItem(k); location.reload(); };
+(async()=>{
+  py=await loadPyodide(); py.FS.mkdirTree(D);
+  for(const f of 文件){const t=await (await fetch("py/"+f)).text(); py.FS.writeFile(D+"/"+f,t);}
+  py.runPython(`import sys; sys.path.insert(0,"${D}")`);
+  读进(); 步=JSON.parse(取("步")||"[]");
+  // 刷新页面时：已经指认过就别再跑一遍指认（会重复记账），只重放到两天
+  const 已揭=步.length>=3;
+  out.textContent=跑([村名(),种子(),...(已揭?步.slice(0,2):步)]) + (已揭?"\n（这一局你已经指认过了，揭开的那段在抄本里。）":"");
+  画();
+})();
+</script>
