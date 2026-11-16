@@ -222,6 +222,16 @@ for n, (a, b) in sorted(串新.items()):
     print(f"{n}那儿说不上话了，{a}这阵子跟{b}家走动起来。")
 for n, (a, b) in sorted(串.items()): 老.append(f"{a}常去{b}家")
 if 老: print("村里老样子：" + "；".join(老) + "。")
+import json as _j  # 网页用：每户名字旁边常摆的牌子（第 22 天 22:3x 吹万），终端里没人看这行
+_牌 = {n: [] for n in 名}
+for n in 仇: _牌[n].append("见你关门")
+for n in 服: _牌[n].append("见你低头")
+for n in 盘: _牌[n].append("说话收着")
+for n in 托: _牌[n].append("人说它替你说话")
+for n in 耳: _牌[n].append("人说它替你打听")
+for n in 窗: _牌[n].append("关着窗")
+for x, z in 梁.items(): _牌[x].append(f"跟{z}不说话")
+if "WEB" in os.environ: print("@牌" + _j.dumps(_牌, ensure_ascii=False))
 深 = {k: len(链(听过, k)) for k in 听过}; _d = max(深.values())
 末 = max([kv for kv in 听过.items() if 深[kv[0]] == _d], key=lambda kv: 打分(kv[1][0], s)); 末句 = 末[1][0]
 print(f"你那天先跟{起[0]}、后来又跟{起[1]}各说了一遍：{念(s)}")
