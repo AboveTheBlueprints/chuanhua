@@ -32,6 +32,7 @@ button:disabled{opacity:.35;cursor:default}
 </details>
 <div id=st>正在把村子搬进来……（头一回要等十几秒）</div>
 <pre id=out></pre>
+<p class=lin>邻居：王婆—李瞎子、王婆—赵屠、李瞎子—孙先生、李瞎子—小六、赵屠—钱寡妇、孙先生—钱寡妇、钱寡妇—小六</p>
 <div id=ctl></div>
 <p><button id=chao>看前面几局的抄本</button> <button id=reset>从头换一个村子</button></p>
 </main>
@@ -90,6 +91,7 @@ function 画(){
   }
 }
 function 走(a){
+  document.querySelector("details").open=false;
   步.push(a); 存("步",JSON.stringify(步));
   // 指认那一下会改村记，只跑一次；平时每次从头算
   out.textContent=跑([村名(),种子(),...步]); 画();
@@ -105,6 +107,7 @@ document.getElementById("reset").onclick=()=>{ if(!confirm("整个村子忘掉�
   // 刷新页面时：已经指认过就别再跑一遍指认（会重复记账），只重放到两天
   const 已揭=步.length>=3;
   out.textContent=跑([村名(),种子(),...(已揭?步.slice(0,2):步)]) + (已揭?"\n（这一局你已经指认过了，揭开的那段在抄本里。）":"");
+  if(局数()>1||步.length) document.querySelector("details").open=false;
   画();
 })();
 </script>
