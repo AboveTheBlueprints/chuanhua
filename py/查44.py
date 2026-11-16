@@ -1,3 +1,4 @@
+# 查46（吹万 第 23 天 00:4x）：撇清。替你说过话的那户，怕人说它是你的嘴，从此传你的话往吓人里说（嘴换成怕；盘问过它照样收着，三局；记仇照旧盖过）。开局写一句、牌上摆一块。为什么：网四十七1/2 后三局全村零点，'答题的感觉变多了'；收着把怕压成好心，查得越勤村里越太平。让前面托过的那一步回来添点。
 # 查44（吹万 18:06 段）：查43 + 梁子：你冤了 X、真先改的是 Z，X 跟 Z 结梁子（永久）。开局头一回写「X 跟 Z 在井边吵了一架」，以后每局都写「X 逢人就说：这回八成又是 Z 在里头添的」——不管这局 Z 改没改。
 #   为什么：查四十三两人最好的一下都在关系那层，四十三2 最想看"我离开后这些人怎样对待彼此"。我加的人情一直是"村里对你"，这一刀是"村里两户之间"，起因是他指错的那一下。X 的话有时是真线索、有时是记恨，看他读不读得出 X 为什么老盯着 Z（是我冤了 X）。
 # 查43（吹万 17:43 段）：查42 + 说中了的那户老实两局：被你指对的那户，接下来两局对谁都照原样传（不只对你），第三局老毛病又犯。
@@ -167,6 +168,7 @@ def 开局(seed):  # 同一颗种子、同一棵树，只是记仇的那几户�
     if 歪: 村[歪] = 原样
     for 生, 师 in 学.items():
         if 师 == 歪: 村[生] = 原样
+    for n in 托: 村[n] = 查2.怕  # 查46 撇清：人说它替你说话，它就把你往重里说，好撇清
     for n in 盘: 村[n] = 收着.get(村[n], 村[n])
     for n, k in 服时.items():
         if 局 - k <= 2: 村[n] = 原样
@@ -186,7 +188,8 @@ for _k in range(200):
     if _歪(_末[1][0], s) >= 2: break
 糊 = random.Random(seed * 7 + 1).choice(名)
 对你 = dict(村)
-for n in 服: 对你[n] = 原样
+for n in 服:
+    if n not in 服时 or 局 - 服时[n] <= 2: 对你[n] = 原样  # 网48 四十八1：说恢复了，当面还低着头
 老 = []
 for n in 仇:
     if 新("仇", n): print(f"{n}远远看见你，把门关上了。")
@@ -202,6 +205,9 @@ for n in sorted(盘):
 for n in sorted(托):
     if 新("托", n): print(f"{n}门口，{邻[n][0]}正跟人嘀咕：「他家那张嘴，现在是替人家说话的。」看见你过来，不说了。")
     else: 老.append(f"{n}替你说过话")
+    if n in 盘 or (n in 服时 and 局 - 服时[n] <= 2): pass  # 盘问吓着了、被说中低着头，压过撇清
+    elif 新("托", n): print(f"{n}这阵子一提起你，总比听来的说重一截。有人问，它说：「我可不是替他说话的。」")
+    else: 老.append(f"{n}把你往重里说")
 for n in sorted(耳):
     if 新("耳", n): print(f"{n}家门口没人坐了。有人小声说：「跟{n}说话可得留半句，它是给人家打听事的。」")
     else: 老.append(f"{n}没人跟它说事")
@@ -216,7 +222,7 @@ for x, z in sorted(梁.items()):
 for n in sorted(窗):
     if 新("窗", n): print(f"{n}家墙根的柴火上回被人踩断了。{n}家这回说话关着窗。")
     else: 老.append(f"{n}关着窗")
-for n in sorted(n for n, k in 盘时.items() if 局 - k == 3): print(f"{n}缓过来了，说话又是老样子。")
+for n in sorted(n for n, k in 盘时.items() if 局 - k == 3): print(f"{n}缓过来了，又把你往重里说了。" if n in 托 else f"{n}缓过来了，说话又是老样子。")  # 网48：撇清跟老样子并排
 for n in sorted(n for n, k in 窗时.items() if 局 - k == 3): print(f"{n}家的窗又开了。")
 for n, (a, b) in sorted(串新.items()):
     print(f"{n}那儿说不上话了，{a}这阵子跟{b}家走动起来。")
@@ -228,11 +234,12 @@ for n in 仇: _牌[n].append("见你关门")
 for n in 服:
     if n not in 服时 or 局 - 服时[n] <= 2: _牌[n].append("见你低头")  # 网45 四十五2：缓过来了牌上还写低头
 for n in 盘: _牌[n].append("说话收着")
-for n in 托: _牌[n].append("人说它替你说话")
+for n in 托: _牌[n] += ["人说它替你说话"] + ([] if n in 盘 or (n in 服时 and 局 - 服时[n] <= 2) else ["说你往重里说"])
 for n in 耳: _牌[n].append("人说它替你打听")
 for n in 窗: _牌[n].append("关着窗")
 for x, z in 梁.items(): _牌[x].append(f"跟{z}不说话")
 if "WEB" in os.environ: print("@牌" + _j.dumps(_牌, ensure_ascii=False))
+if "WEB" in os.environ: print("@邻" + _j.dumps(邻, ensure_ascii=False))  # 网48：走动起来了，邻居栏还是旧的
 深 = {k: len(链(听过, k)) for k in 听过}; _d = max(深.values())
 末 = max([kv for kv in 听过.items() if 深[kv[0]] == _d], key=lambda kv: 打分(kv[1][0], s)); 末句 = 末[1][0]
 print(f"你那天先跟{起[0]}、后来又跟{起[1]}各说了一遍：{念(s)}")

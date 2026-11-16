@@ -75,7 +75,8 @@ finally:
 _o.getvalue()`);
   写回();
   const m=s.match(/^@牌(.*)$/m); if(m){ try{牌=JSON.parse(m[1])}catch(e){} }
-  return s.replace(/^@牌.*\n?/m,"");
+  const m2=s.match(/^@邻(.*)$/m); if(m2){ try{Object.assign(邻,JSON.parse(m2[1]))}catch(e){} }
+  return s.replace(/^@牌.*\n?/m,"").replace(/^@邻.*\n?/m,"");
 }
 function 画(){
   画牌(); ctl.innerHTML="";
