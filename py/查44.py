@@ -225,7 +225,8 @@ if 老: print("村里老样子：" + "；".join(老) + "。")
 import json as _j  # 网页用：每户名字旁边常摆的牌子（第 22 天 22:3x 吹万），终端里没人看这行
 _牌 = {n: [] for n in 名}
 for n in 仇: _牌[n].append("见你关门")
-for n in 服: _牌[n].append("见你低头")
+for n in 服:
+    if n not in 服时 or 局 - 服时[n] <= 2: _牌[n].append("见你低头")  # 网45 四十五2：缓过来了牌上还写低头
 for n in 盘: _牌[n].append("说话收着")
 for n in 托: _牌[n].append("人说它替你说话")
 for n in 耳: _牌[n].append("人说它替你打听")
@@ -239,7 +240,7 @@ print(f"今天村口{末[0]}当面问你：听说{念(末句)[1:]}？")
 现 = {k: v[0] for k, v in 听过.items()}
 def 村里():
     return "　".join((f"{k}{'·' * 坏(现[k])}" if k in 现 else f"{k}(没听说)") for k in 名)
-print("村里这会儿（点越多越坏）：" + 村里())
+print("开局时村里（点越多越坏；往后看每夜的新点数）：" + 村里())
 问 = [x for x in sys.argv[2:4]]
 for 步 in 问:
     谁_ = 步.split(":")[-1]
